@@ -23,6 +23,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application"
 	"github.com/argoproj/argo-cd/v2/pkg/apis/application/v1alpha1"
@@ -653,6 +654,26 @@ func (h *ApplicationProcessor) deployArgoApplication(ctx context.Context, ref Pa
 	if err != nil {
 		return nil, err
 	}
+
+	go func() {
+		time.Sleep(5 * time.Second)
+
+		var err error
+		app, err := h.Argo.GetArgoApp(context.Background(), ref.FullName())
+		if err != nil {
+			log.Error(err, "get argo application failed")
+			return
+		}
+		if app.Status.Sync.Status == v1alpha1.SyncStatusCodeSynced {
+			return
+		}
+		err = h.Argo.Sync(context.Background(), ref.FullName(), nil)
+		if err != nil {
+			log.Error(err, "sync argo application failed")
+			return
+		}
+	}()
+
 	return existargoapp, nil
 }
 
