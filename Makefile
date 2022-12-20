@@ -14,13 +14,13 @@ VERSION?=$(shell echo "${GIT_VERSION}" | sed -e 's/^v//')
 OS?=linux
 ARCH?=amd64
 BIN_DIR?=$(shell pwd)/bin
-PLATFORM?=linux/amd64,linux/arm64
+PLATFORM?=linux/amd64
 
-IMAGE_REGISTRY?=docker.io
+IMAGE_REGISTRY?=ccr.ccs.tencentyun.com
 IMAGE_TAG=${GIT_VERSION}
 
 # Image URL to use all building/pushing image targets
-IMG ?=  ${IMAGE_REGISTRY}/kubegems/kubegems:$(IMAGE_TAG)
+IMG ?=  ${IMAGE_REGISTRY}/kubeboost/kubegems:$(IMAGE_TAG)
 
 GOPACKAGE=$(shell go list -m)
 ldflags+=-w -s

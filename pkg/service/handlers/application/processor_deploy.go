@@ -350,6 +350,24 @@ func (h *ApplicationProcessor) deployHelmApplication(ctx context.Context, ref Pa
 		return nil
 	}
 
+	applist, err := h.Argo.ListArgoApp(ctx, labels.Set{
+		LabelKeyFrom:     LabelValueFromAppStore,
+		LabelTenant:      ref.Tenant,
+		LabelProject:     ref.Project,
+		LabelEnvironment: ref.Env,
+	}.AsSelector())
+
+	envdetails, err := h.DataBase.GetEnvironmentWithCluster(ref)
+	if err != nil {
+		return nil, err
+	}
+	namespace := envdetails.Namespace
+	for _, app := range applist.Items {
+		if app.Namespace == namespace && app.Spec.Source.Chart == form.Chart && !strings.Contains(form.RepoURL, "http://kubegems-chartmuseum.kubegems:8080/kubegems") {
+			return nil, errors.NewBadRequest("same chart app already exist in this environment")
+		}
+	}
+
 	return h.deployArgoApplication(ctx, ref, sethelmfunc)
 }
 
